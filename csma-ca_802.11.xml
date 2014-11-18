@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE nta PUBLIC '-//Uppaal Team//DTD Flat System 1.1//EN' 'http://www.it.uu.se/research/group/darts/uppaal/flat-1_2.dtd'>
+<nta>
+	<declaration>// Place global declarations here.
+const int aCWmin = 15;
+const int aCWmax = 1023;
+clock y;
+
+// Values extracted from octave:
+// Do not modify this or the End commentary
+const int N =  5;
+const int TsifsMicroSecs =  16;
+const int TdifsMicroSecs =  34;
+const int TslotMicroSecs =  9;
+const int TsymbolMicroSecs =  4;
+const int Tack =  44;
+const int Tdata =  1681;
+const int Ts =  1776;
+const int ACKTimeout =  50;
+const int Tn =  9040;
+// End extracted values
+
+typedef int[0,N-1] id_t;
+broadcast chan start_sending;
+broadcast chan finish_sending[id_t][id_t];
+
+int cw_size(int cw){
+// assuming infinte retries
+    return (cw == aCWmax) ? aCWmax : (2*cw)+1;
+}</declaration>
+	<template>
+		<name x="5" y="5">Node</name>
+		<parameter>const id_t id</parameter>
+		<declaration>clock x;
+int cnt;
+int dst;
+int src;
+int slotCnt = -1;
+int cw = 7;
+int numOfTx = 0;
+
+int sta_list[N-1];
+
+void init_network(){
+    //fill sta_list with all but this node's id.
+    //this will cause the node to never try to send a message to itself.
+    int sta = 0;
+    int i = sta;
+    while(i &lt; N-1){
+        if(sta != id){
+            sta_list[i] = sta;
+            i++;
+        }
+        sta++;
+    }
+}</declaration>
+		<location id="id0" x="-1130" y="-34">
+			<urgent/>
+		</location>
+		<location id="id1" x="-102" y="136">
+			<label kind="invariant" x="-93" y="145">cnt &lt;= cw</label>
+			<committed/>
+		</location>
+		<location id="id2" x="136" y="-34">
+			<name x="153" y="-59">Waiting_Slot</name>
+			<label kind="invariant" x="153" y="-25">x &lt;= TslotMicroSecs</label>
+		</location>
+		<location id="id3" x="-297" y="374">
+			<name x="-289" y="349">Waiting_DIFS</name>
+			<label kind="invariant" x="-288" y="382">x &lt;= TdifsMicroSecs</label>
+		</location>
+		<location id="id4" x="-603" y="-34">
+			<name x="-595" y="-59">Waiting_ack</name>
+			<label kind="invariant" x="-603" y="-17">x &lt;= ACKTimeout</label>
+		</location>
+		<location id="id5" x="-603" y="-204">
+			<name x="-595" y="-229">Transmitting</name>
+			<label kind="invariant" x="-586" y="-195">x &lt;= Tdata</label>
+		</location>
+		<location id="id6" x="-986" y="-34">
+			<name x="-969" y="-59">Sensing_for_DIFS</name>
+			<label kind="invariant" x="-969" y="-25">x &lt;= TdifsMicroSecs</label>
+		</location>
+		<location id="id7" x="-986" y="527">
+			<name x="-969" y="501">Sending_ack</name>
+			<label kind="invariant" x="-969" y="535">x &lt;= Tack</label>
+		</location>
+		<location id="id8" x="-646" y="374">
+			<name x="-629" y="348">Read_destiny</name>
+			<urgent/>
+		</location>
+		<location id="id9" x="-986" y="374">
+			<name x="-969" y="348">Waiting_sifs</name>
+			<label kind="invariant" x="-969" y="382">x &lt;= TsifsMicroSecs</label>
+		</location>
+		<location id="id10" x="-773" y="170">
+			<name x="-756" y="144">Waiting_medium_free</name>
+		</location>
+		<init ref="id0"/>
+		<transition>
+			<source ref="id0"/>
+			<target ref="id6"/>
+			<label kind="assignment" x="-1112" y="-34">init_network()</label>
+			<nail x="-1062" y="-34"/>
+		</transition>
+		<transition>
+			<source ref="id2"/>
+			<target ref="id2"/>
+			<label kind="guard" x="170" y="-153">x == TslotMicroSecs &amp;&amp;
+slotCnt != 0</label>
+			<label kind="assignment" x="170" y="-119">slotCnt--</label>
+			<nail x="306" y="-34"/>
+			<nail x="306" y="-102"/>
+			<nail x="162" y="-102"/>
+		</transition>
+		<transition>
+			<source ref="id1"/>
+			<target ref="id2"/>
+			<label kind="guard" x="0" y="76">cnt &gt;= 0</label>
+			<label kind="assignment" x="0" y="93">slotCnt := cnt,
+cnt := 0</label>
+			<nail x="136" y="136"/>
+		</transition>
+		<transition>
+			<source ref="id2"/>
+			<target ref="id10"/>
+			<label kind="guard" x="-170" y="-68">slotCnt != 0</label>
+			<label kind="synchronisation" x="-170" y="-85">start_sending?</label>
+			<label kind="assignment" x="-170" y="-51">x := 0</label>
+			<nail x="-297" y="-34"/>
+			<nail x="-297" y="170"/>
+			<nail x="-331" y="170"/>
+		</transition>
+		<transition>
+			<source ref="id3"/>
+			<target ref="id1"/>
+			<label kind="guard" x="-93" y="212">x == TdifsMicroSecs &amp;&amp;
+slotCnt == -1</label>
+			<label kind="assignment" x="-93" y="246">x := 0</label>
+			<nail x="-102" y="374"/>
+			<nail x="-102" y="306"/>
+		</transition>
+		<transition>
+			<source ref="id1"/>
+			<target ref="id1"/>
+			<label kind="assignment" x="-178" y="85">cnt++</label>
+			<nail x="-127" y="102"/>
+			<nail x="-186" y="102"/>
+			<nail x="-161" y="136"/>
+		</transition>
+		<transition>
+			<source ref="id3"/>
+			<target ref="id10"/>
+			<label kind="synchronisation" x="-280" y="246">start_sending?</label>
+			<label kind="assignment" x="-280" y="263">x := 0</label>
+			<nail x="-297" y="170"/>
+			<nail x="-331" y="170"/>
+		</transition>
+		<transition>
+			<source ref="id6"/>
+			<target ref="id10"/>
+			<label kind="synchronisation" x="-977" y="76">start_sending?</label>
+			<label kind="assignment" x="-977" y="93">x := 0</label>
+			<nail x="-986" y="170"/>
+		</transition>
+		<transition>
+			<source ref="id2"/>
+			<target ref="id5"/>
+			<label kind="guard" x="-204" y="-255">slotCnt == 0</label>
+			<label kind="synchronisation" x="-204" y="-272">start_sending!</label>
+			<label kind="assignment" x="-204" y="-238">slotCnt := -1,
+x := 0</label>
+			<nail x="136" y="-204"/>
+		</transition>
+		<transition>
+			<source ref="id3"/>
+			<target ref="id2"/>
+			<label kind="guard" x="-76" y="340">x == TdifsMicroSecs &amp;&amp;
+slotCnt != -1</label>
+			<label kind="assignment" x="-76" y="374">x := 0</label>
+			<nail x="136" y="374"/>
+		</transition>
+		<transition>
+			<source ref="id4"/>
+			<target ref="id3"/>
+			<label kind="guard" x="-458" y="17">x == ACKTimeout</label>
+			<label kind="assignment" x="-458" y="34">x := 0,
+cw := cw_size(cw)</label>
+			<nail x="-467" y="-34"/>
+			<nail x="-467" y="102"/>
+		</transition>
+		<transition>
+			<source ref="id5"/>
+			<target ref="id4"/>
+			<label kind="select" x="-594" y="-153">d : int[0,N-2]</label>
+			<label kind="guard" x="-594" y="-136">x == Tdata</label>
+			<label kind="synchronisation" x="-594" y="-119">finish_sending[id][sta_list[d]]!</label>
+			<label kind="assignment" x="-594" y="-102">x := 0</label>
+		</transition>
+		<transition>
+			<source ref="id6"/>
+			<target ref="id5"/>
+			<label kind="guard" x="-926" y="-255">x == TdifsMicroSecs</label>
+			<label kind="synchronisation" x="-926" y="-238">start_sending!</label>
+			<label kind="assignment" x="-926" y="-221">x := 0</label>
+			<nail x="-986" y="-204"/>
+		</transition>
+		<transition>
+			<source ref="id9"/>
+			<target ref="id7"/>
+			<label kind="guard" x="-977" y="442">x == TsifsMicroSecs</label>
+			<label kind="synchronisation" x="-977" y="425">start_sending!</label>
+			<label kind="assignment" x="-977" y="459">x := 0</label>
+		</transition>
+		<transition>
+			<source ref="id8"/>
+			<target ref="id3"/>
+			<label kind="guard" x="-458" y="340">dst != id</label>
+			<label kind="assignment" x="-458" y="357">x := 0</label>
+			<nail x="-339" y="374"/>
+		</transition>
+		<transition>
+			<source ref="id7"/>
+			<target ref="id3"/>
+			<label kind="guard" x="-782" y="493">x == Tack</label>
+			<label kind="synchronisation" x="-782" y="476">finish_sending[id][sta_list[src]]!</label>
+			<label kind="assignment" x="-782" y="510">x := 0</label>
+			<nail x="-297" y="527"/>
+		</transition>
+		<transition>
+			<source ref="id8"/>
+			<target ref="id9"/>
+			<label kind="guard" x="-773" y="323">dst == id &amp;&amp;
+x == Tdata</label>
+			<label kind="assignment" x="-773" y="357">x := 0</label>
+		</transition>
+		<transition>
+			<source ref="id8"/>
+			<target ref="id3"/>
+			<label kind="guard" x="-493" y="382">dst == id &amp;&amp;
+x == Tack</label>
+			<label kind="assignment" x="-493" y="416">x := 0,
+cw = aCWmin,
+numOfTx++</label>
+			<nail x="-646" y="467"/>
+			<nail x="-297" y="467"/>
+		</transition>
+		<transition>
+			<source ref="id10"/>
+			<target ref="id8"/>
+			<label kind="select" x="-637" y="221">s : int[0,N-2],
+d : int[0,N-1]</label>
+			<label kind="synchronisation" x="-637" y="255">finish_sending[sta_list[s]][d]?</label>
+			<label kind="assignment" x="-637" y="272">src := s,
+dst := d</label>
+			<nail x="-646" y="221"/>
+		</transition>
+		<transition>
+			<source ref="id4"/>
+			<target ref="id10"/>
+			<label kind="synchronisation" x="-765" y="68">start_sending?</label>
+			<label kind="assignment" x="-765" y="85">x := 0</label>
+			<nail x="-646" y="-34"/>
+			<nail x="-773" y="-34"/>
+		</transition>
+	</template>
+	<system>// Place template instantiations here.
+
+// List one or more processes to be composed into a system.
+system Node;
+    </system>
+	<queries>
+		<query>
+			<formula>E&lt;&gt; exists( i : int[0,N-1] ) (Node(i).numOfTx == 0 &amp;&amp; y &gt;= Tn)
+			</formula>
+			<comment>Is it possible for a node to never transmit with success in Ts?
+			</comment>
+		</query>
+		<query>
+			<formula>E&lt;&gt; exists( i : int[0,N-1] ) (Node(i).numOfTx == 2 &amp;&amp; y &lt;= Tn)
+			</formula>
+			<comment>Is it possible for the same node to transmit k times (2&lt;=k&lt;=n) in a period of Tn?
+			</comment>
+		</query>
+		<query>
+			<formula>E&lt;&gt; forall( i : int[0,N-1] ) Node(i).Transmitting
+			</formula>
+			<comment>
+			</comment>
+		</query>
+		<query>
+			<formula>A&lt;&gt; forall( i : int[0,N-1] ) (Node(i).numOfTx != 0 &amp;&amp; y &gt;= Tn)
+			</formula>
+			<comment>Is it possible to have no transmittion in Ts?
+
+//E&lt;&gt; forall( i : int[0,N-1] ) (Node(i).numOfTx == 0 &amp;&amp; y &gt;= Tn)
+			</comment>
+		</query>
+		<query>
+			<formula>E&lt;&gt; forall( i : int[0,1] ) Node(2).Transmitting &amp;&amp; Node(i).Waiting_ack
+			</formula>
+			<comment>dois nós esperam ack enquanto outro transmite.. deve ser possivel devido a ausencia de EIFS no modelo.
+			</comment>
+		</query>
+	</queries>
+</nta>
