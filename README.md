@@ -1,7 +1,5 @@
-csma-ca-uppaal
-==============
-
 Formal model of the 802.11 DCF using UPPAAL
+---
 
 This is a formal model of the IEEE 802.11 Distributed Coordination Function. It was created with [UPPAAL](http://uppaal.org).
 
