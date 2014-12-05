@@ -83,7 +83,7 @@ prepareDescriptionFile() {
     echo -e "$HEADER" > "$DECLFILE"
     echo -e "// Do not modify this or the End commentary" >> "$DECLFILE"
     octave -q <<EOF >> $DECLFILE
-source("octave.m")
+source("pbp-edcf.m")
 N = $N
 
 [TsifsMicroSecs, TdifsMicroSecs, TslotMicroSecs, TsymbolMicroSecs] = compute80211TimingParameters($channelWidthMHz,$WLANStandard)
@@ -94,7 +94,7 @@ msduDataBits = $appLayerPayLoadBytes * 8;
 
 H = macAndPhyHeadersTxTimeMicroSecs;
 TL = macPayloadTxTimeInMicroSecs;
-delta = 1;                              %from octave.m
+delta = 1;                              %from pbp-edcf.m
 Tack = ackTxTimeInMicroSecs
 
 Tdata = H + TL + delta
