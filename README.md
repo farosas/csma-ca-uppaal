@@ -19,4 +19,4 @@ The complete model is shown [here](https://raw.githubusercontent.com/fabianorosa
 
 --
 
-[1] - Saulo Queiroz and Roberto Hexsel, 2014. Translating Full Duplex into Capacity Gains for the High-Priority Traffic Classes of IEEE 802.11. In Proceedings of the 30th Annual ACM SIGAPP Symposium on Applied Computing (SAC '15). ACM, New York, NY, USA.
+[1] - Saulo Queiroz and Roberto Hexsel, 2014. Translating Full Duplex into Capacity Gains for the High-Priority Traffic Classes of IEEE 802.11. In Proceedings of the 30th Annual ACM SIGAPP Symposium on Applied Computing (SAC '15). ACM, New York, NY, USA. - http://dx.doi.org/10.1145/2695664.2695809
